@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-ring: var(--ring);
+  --color-completed: var(--completed);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html[data-theme="bright"] {
+  color-scheme: light;
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --page: #f4f4f5;
+  --surface: #ffffff;
+  --surface-hover: #fafafa;
+  --muted: #71717a;
+  --subtle: #3f3f46;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --accent: #18181b;
+  --accent-foreground: #fafafa;
+  --accent-hover: #3f3f46;
+  --ring: #a1a1aa;
+  --completed: #a1a1aa;
+  --color-background: #f4f4f5;
+  --color-foreground: #18181b;
+  --color-page: #f4f4f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #fafafa;
+  --color-muted: #71717a;
+  --color-subtle: #3f3f46;
+  --color-border: #e4e4e7;
+  --color-border-strong: #d4d4d8;
+  --color-accent: #18181b;
+  --color-accent-foreground: #fafafa;
+  --color-accent-hover: #3f3f46;
+  --color-ring: #a1a1aa;
+  --color-completed: #a1a1aa;
+}
+
+html[data-theme="gray"] {
+  color-scheme: dark;
+  --background: #3f3f46;
+  --foreground: #fafafa;
+  --page: #3f3f46;
+  --surface: #52525b;
+  --surface-hover: #71717a;
+  --muted: #d4d4d8;
+  --subtle: #e4e4e7;
+  --border: #71717a;
+  --border-strong: #a1a1aa;
+  --accent: #e4e4e7;
+  --accent-foreground: #27272a;
+  --accent-hover: #f4f4f5;
+  --ring: #a1a1aa;
+  --completed: #a1a1aa;
+  --color-background: #3f3f46;
+  --color-foreground: #fafafa;
+  --color-page: #3f3f46;
+  --color-surface: #52525b;
+  --color-surface-hover: #71717a;
+  --color-muted: #d4d4d8;
+  --color-subtle: #e4e4e7;
+  --color-border: #71717a;
+  --color-border-strong: #a1a1aa;
+  --color-accent: #e4e4e7;
+  --color-accent-foreground: #27272a;
+  --color-accent-hover: #f4f4f5;
+  --color-ring: #a1a1aa;
+  --color-completed: #a1a1aa;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --page: #09090b;
+  --surface: #18181b;
+  --surface-hover: #27272a;
+  --muted: #a1a1aa;
+  --subtle: #d4d4d8;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --accent: #fafafa;
+  --accent-foreground: #18181b;
+  --accent-hover: #d4d4d8;
+  --ring: #71717a;
+  --completed: #71717a;
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  --color-page: #09090b;
+  --color-surface: #18181b;
+  --color-surface-hover: #27272a;
+  --color-muted: #a1a1aa;
+  --color-subtle: #d4d4d8;
+  --color-border: #27272a;
+  --color-border-strong: #3f3f46;
+  --color-accent: #fafafa;
+  --color-accent-foreground: #18181b;
+  --color-accent-hover: #d4d4d8;
+  --color-ring: #71717a;
+  --color-completed: #71717a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: var(--color-foreground);
+}
+
+html[data-theme="bright"] .theme-option[data-theme-option="bright"],
+html[data-theme="gray"] .theme-option[data-theme-option="gray"],
+html[data-theme="dark"] .theme-option[data-theme-option="dark"] {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+@keyframes theme-spread {
+  from {
+    opacity: 0.7;
+    transform: scaleX(0.36);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.theme-switcher-spread {
+  animation: theme-spread 180ms ease-out;
+}
+
+.theme-action {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+.theme-action:hover {
+  background: var(--color-accent-hover);
 }
