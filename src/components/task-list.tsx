@@ -1,45 +1,48 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { FormEvent, useState } from "react";
 import { ClearFiltersButton } from "@/components/clear-filters-button";
 import { FilterToggleButton } from "@/components/filter-toggle-button";
 import { SortDirectionToggle } from "@/components/sort-direction-toggle";
 import { TaskFilters } from "@/components/task-filters";
 import { TaskItem } from "@/components/task-item";
+import { filterTasks, sortTasks } from "@/lib/task-filters";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  filterTasks,
-  sortTasks,
-  type DateFilterMode,
-  type SortDirection,
-  type SortOption,
-} from "@/lib/task-filters";
-import { createTask, loadTasks, saveTasks, type Task } from "@/lib/tasks";
+  selectCreatedDate,
+  selectDateMode,
+  selectFilterQuery,
+  selectFiltersOpen,
+  selectSortBy,
+  selectSortDirection,
+} from "@/store/filters/selectors";
+import {
+  clearFilters,
+  setCreatedDate,
+  setDateMode,
+  setQuery,
+  setSortBy,
+  toggleFiltersOpen,
+  toggleSortDirection,
+} from "@/store/filters/slice";
+import { selectTasks, selectTasksStatus } from "@/store/tasks/selectors";
+import {
+  addTaskRequested,
+  deleteTaskRequested,
+  toggleTaskRequested,
+} from "@/store/tasks/slice";
 
 export function TaskList() {
-  const pathname = usePathname();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const dispatch = useAppDispatch();
+  const tasks = useAppSelector(selectTasks);
+  const status = useAppSelector(selectTasksStatus);
+  const query = useAppSelector(selectFilterQuery);
+  const sortBy = useAppSelector(selectSortBy);
+  const sortDirection = useAppSelector(selectSortDirection);
+  const dateMode = useAppSelector(selectDateMode);
+  const createdDate = useAppSelector(selectCreatedDate);
+  const isFiltersOpen = useAppSelector(selectFiltersOpen);
   const [title, setTitle] = useState("");
-  const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("date-start");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [dateMode, setDateMode] = useState<DateFilterMode>("from");
-  const [createdDate, setCreatedDate] = useState("");
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    setTasks(loadTasks());
-    setIsReady(true);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!isReady) {
-      return;
-    }
-
-    saveTasks(tasks);
-  }, [isReady, tasks]);
 
   const remainingCount = tasks.reduce(
     (count, task) => (task.completed ? count : count + 1),
@@ -51,6 +54,7 @@ export function TaskList() {
     sortDirection,
   );
   const hasActiveFilters = query.trim().length > 0 || createdDate.length > 0;
+  const isReady = status === "ready" || status === "failed";
 
   const addTask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,21 +65,9 @@ export function TaskList() {
       return;
     }
 
-    setTasks((currentTasks) => [createTask(trimmedTitle), ...currentTasks]);
+    dispatch(addTaskRequested(trimmedTitle));
     setTitle("");
   };
-
-  const toggleTask = useCallback((id: string) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
-    );
-  }, []);
-
-  const deleteTask = useCallback((id: string) => {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
-  }, []);
 
   return (
     <section className="flex w-full flex-col gap-6">
@@ -101,16 +93,12 @@ export function TaskList() {
         {isFiltersOpen || hasActiveFilters ? (
           <ClearFiltersButton
             disabled={!hasActiveFilters}
-            onClear={() => {
-              setQuery("");
-              setCreatedDate("");
-              setDateMode("from");
-            }}
+            onClear={() => dispatch(clearFilters())}
           />
         ) : null}
         <FilterToggleButton
           isOpen={isFiltersOpen}
-          onToggle={() => setIsFiltersOpen((isOpen) => !isOpen)}
+          onToggle={() => dispatch(toggleFiltersOpen())}
         />
       </form>
 
@@ -124,10 +112,10 @@ export function TaskList() {
                 dateMode={dateMode}
                 createdDate={createdDate}
                 autoFocus
-                onQueryChange={setQuery}
-                onSortChange={setSortBy}
-                onDateModeChange={setDateMode}
-                onCreatedDateChange={setCreatedDate}
+                onQueryChange={(value) => dispatch(setQuery(value))}
+                onSortChange={(value) => dispatch(setSortBy(value))}
+                onDateModeChange={(value) => dispatch(setDateMode(value))}
+                onCreatedDateChange={(value) => dispatch(setCreatedDate(value))}
               />
             ) : null}
             <div className="flex items-center justify-between gap-3">
@@ -138,11 +126,7 @@ export function TaskList() {
               </p>
               <SortDirectionToggle
                 direction={sortDirection}
-                onToggle={() =>
-                  setSortDirection((current) =>
-                    current === "asc" ? "desc" : "asc",
-                  )
-                }
+                onToggle={() => dispatch(toggleSortDirection())}
               />
             </div>
             {visibleTasks.length > 0 ? (
@@ -151,8 +135,8 @@ export function TaskList() {
                   <TaskItem
                     key={task.id}
                     task={task}
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
+                    onToggle={(id) => dispatch(toggleTaskRequested(id))}
+                    onDelete={(id) => dispatch(deleteTaskRequested(id))}
                   />
                 ))}
               </ul>

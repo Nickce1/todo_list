@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { StoreProvider } from "@/store/provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,10 +32,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col bg-page font-sans text-foreground">
-        <div className="sticky top-0 z-10 flex justify-end border-b border-border bg-page/90 px-4 py-3 backdrop-blur">
-          <ThemeSwitcher />
-        </div>
-        {children}
+        <StoreProvider>
+          <div className="sticky top-0 z-10 flex justify-end border-b border-border bg-page/90 px-4 py-3 backdrop-blur">
+            <ThemeSwitcher />
+          </div>
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );

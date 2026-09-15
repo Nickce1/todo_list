@@ -5,15 +5,15 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackToTasksLink } from "@/components/back-to-tasks-link";
 import {
-  formatTaskDate,
   formatTaskDateTime,
-  getTaskById,
   isUrgency,
-  updateTask,
   URGENCY_LABELS,
   URGENCY_LEVELS,
   type Urgency,
 } from "@/lib/tasks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectTaskById, selectTasksStatus } from "@/store/tasks/selectors";
+import { updateTaskRequested } from "@/store/tasks/slice";
 
 const fieldClassName =
   "h-11 rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none ring-ring focus:ring-2";
@@ -24,6 +24,9 @@ type TaskEditorProps = {
 
 export function TaskEditor({ taskId }: TaskEditorProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectTasksStatus);
+  const task = useAppSelector((state) => selectTaskById(state, taskId));
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [completed, setCompleted] = useState(false);
@@ -34,7 +37,9 @@ export function TaskEditor({ taskId }: TaskEditorProps) {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const task = getTaskById(taskId);
+    if (status !== "ready" && status !== "failed") {
+      return;
+    }
 
     if (!task) {
       setNotFound(true);
@@ -50,29 +55,29 @@ export function TaskEditor({ taskId }: TaskEditorProps) {
     setUrgency(task.urgency);
     setNotFound(false);
     setIsReady(true);
-  }, [taskId]);
+  }, [status, task, taskId]);
 
   const saveTask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedTitle = title.trim();
 
-    if (!trimmedTitle) {
+    if (!trimmedTitle || !task) {
       return;
     }
 
-    const updatedTask = updateTask(taskId, {
-      title: trimmedTitle,
-      description: description.trim(),
-      completed,
-      dueDate: dueDate || null,
-      urgency,
-    });
-
-    if (!updatedTask) {
-      setNotFound(true);
-      return;
-    }
+    dispatch(
+      updateTaskRequested({
+        id: taskId,
+        updates: {
+          title: trimmedTitle,
+          description: description.trim(),
+          completed,
+          dueDate: dueDate || null,
+          urgency,
+        },
+      }),
+    );
 
     router.push("/");
   };

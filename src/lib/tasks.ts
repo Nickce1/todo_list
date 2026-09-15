@@ -253,37 +253,3 @@ export function saveTasks(tasks: Task[]) {
     // localStorage can throw in private browsing or when quota is exceeded
   }
 }
-
-export function getTaskById(id: string): Task | undefined {
-  return loadTasks().find((task) => task.id === id);
-}
-
-export function updateTask(id: string, updates: TaskUpdates): Task | undefined {
-  const tasks = loadTasks();
-  let updatedTask: Task | undefined;
-
-  const nextTasks = tasks.map((task) => {
-    if (task.id !== id) {
-      return task;
-    }
-
-    updatedTask = {
-      ...task,
-      title: updates.title,
-      description: updates.description,
-      completed: updates.completed,
-      dueDate: updates.dueDate,
-      urgency: updates.urgency,
-    };
-
-    return updatedTask;
-  });
-
-  if (!updatedTask) {
-    return undefined;
-  }
-
-  saveTasks(nextTasks);
-
-  return updatedTask;
-}
